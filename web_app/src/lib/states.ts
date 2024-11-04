@@ -29,7 +29,7 @@ import {
 } from "./const"
 import {
   blobToImage,
-  canvasToImage,
+  canvasToImage, convertToBlob,
   dataURItoBlob,
   generateMask,
   loadImage,
@@ -537,8 +537,13 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           if (seed) {
             get().setSeed(parseInt(seed, 10))
           }
+
+          // const jsonObject = JSON.parse(blob) as { code: number,image_data: string }
+
+          const binaryString = convertToBlob(blob.image_data);
+
           const newRender = new Image()
-          await loadImage(newRender, blob)
+          await loadImage(newRender, binaryString)
           const newRenders = [...renders, newRender]
           get().setImageSize(newRender.width, newRender.height)
           get().updateEditorState({
@@ -584,9 +589,15 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           )
           const { blob } = res
 
+
+          // const jsonObject = JSON.parse(blob) as { code: number,image_data: string }
+
+          const binaryString = convertToBlob(blob.image_data);
+
           if (!genMask) {
+
             const newRender = new Image()
-            await loadImage(newRender, blob)
+            await loadImage(newRender, binaryString)
             get().setImageSize(newRender.width, newRender.height)
             const newRenders = [...renders, newRender]
             const newLineGroups = [...lineGroups, []]
@@ -596,7 +607,7 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
             })
           } else {
             const newMask = new Image()
-            await loadImage(newMask, blob)
+            await loadImage(newMask, binaryString)
             set((state) => {
               state.editorState.extraMasks.push(castDraft(newMask))
             })

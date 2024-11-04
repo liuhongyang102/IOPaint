@@ -1,8 +1,8 @@
-import { type ClassValue, clsx } from "clsx"
-import { SyntheticEvent } from "react"
-import { twMerge } from "tailwind-merge"
-import { LineGroup } from "./types"
-import { BRUSH_COLOR } from "./const"
+import {type ClassValue, clsx} from "clsx"
+import {SyntheticEvent} from "react"
+import {twMerge} from "tailwind-merge"
+import {LineGroup} from "./types"
+import {BRUSH_COLOR} from "./const"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -254,3 +254,12 @@ export const convertToBase64 = (fileOrBlob: File | Blob): Promise<string> => {
     reader.readAsDataURL(fileOrBlob)
   })
 }
+
+export const convertToBlob = (base64: string): string => {
+  // 移除 data URL 的前缀部分（如 "data:image/png;base64,"）
+  // const base64Data = base64.replace(/^data:image\/\w+;base64,/, "");
+
+  // 使用 atob() 将 Base64 转换为二进制字符串
+  return atob(base64);
+}
+

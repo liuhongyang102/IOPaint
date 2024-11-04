@@ -5,6 +5,7 @@ import time
 import traceback
 from pathlib import Path
 from typing import Optional, Dict, List
+import json
 
 import cv2
 import numpy as np
@@ -33,6 +34,7 @@ from socketio import AsyncServer
 from iopaint.file_manager import FileManager
 from iopaint.helper import (
     load_img,
+    encode_pil_to_base64,
     decode_base64_to_image,
     pil_to_bytes,
     numpy_to_bytes,
@@ -279,20 +281,36 @@ class Api:
         rgb_res = concat_alpha_channel(rgb_np_img, alpha_channel)
 
         ext = "png"
-        res_img_bytes = pil_to_bytes(
+        base64_data = encode_pil_to_base64(
             Image.fromarray(rgb_res),
-            ext=ext,
             quality=self.config.quality,
-            infos=infos,
+            infos=infos
         )
+        base64_string = base64_data.decode('utf-8')
+        data = {
+            "code": "200",
+            # "image_data": f"data:image/{ext};base64,{base64_string}"
+            "image_data": base64_string,
+        }
+        json_data = json.dumps(data)
+        return Response(content=json_data, media_type="application/json", headers={"X-Seed": str(req.sd_seed)})
+        # return Response(content=f"data:image/{ext};base64,{base64_string}", media_type="text/plan", headers={"X-Seed": str(req.sd_seed)})
 
-        asyncio.run(self.sio.emit("diffusion_finish"))
 
-        return Response(
-            content=res_img_bytes,
-            media_type=f"image/{ext}",
-            headers={"X-Seed": str(req.sd_seed)},
-        )
+        # res_img_bytes = pil_to_bytes(
+        #     Image.fromarray(rgb_res),
+        #     ext=ext,
+        #     quality=self.config.quality,
+        #     infos=infos,
+        # )
+        #
+        # asyncio.run(self.sio.emit("diffusion_finish"))
+        #
+        # return Response(
+        #     content=res_img_bytes,
+        #     media_type=f"image/{ext}",
+        #     headers={"X-Seed": str(req.sd_seed)},
+        # )
 
     def api_run_plugin_gen_image(self, req: RunPluginRequest):
         ext = "png"
@@ -312,15 +330,29 @@ class Api:
             rgba_np_img = cv2.cvtColor(bgr_or_rgba_np_img, cv2.COLOR_BGR2RGB)
             rgba_np_img = concat_alpha_channel(rgba_np_img, alpha_channel)
 
-        return Response(
-            content=pil_to_bytes(
-                Image.fromarray(rgba_np_img),
-                ext=ext,
-                quality=self.config.quality,
-                infos=infos,
-            ),
-            media_type=f"image/{ext}",
+        base64_data = encode_pil_to_base64(
+            Image.fromarray(rgba_np_img),
+            quality=self.config.quality,
+            infos=infos
         )
+        base64_string = base64_data.decode('utf-8')
+        data = {
+            "code": "200",
+            # "image_data": f"data:image/{ext};base64,{base64_string}"
+            "image_data": base64_string
+        }
+        json_data = json.dumps(data)
+        return Response(content=json_data, media_type="application/json")
+
+        # return Response(
+        #     content=pil_to_bytes(
+        #         Image.fromarray(rgba_np_img),
+        #         ext=ext,
+        #         quality=self.config.quality,
+        #         infos=infos,
+        #     ),
+        #     media_type=f"image/{ext}",
+        # )
 
     def api_run_plugin_gen_mask(self, req: RunPluginRequest):
         if req.name not in self.plugins:
@@ -333,10 +365,20 @@ class Api:
         bgr_or_gray_mask = self.plugins[req.name].gen_mask(rgb_np_img, req)
         torch_gc()
         res_mask = gen_frontend_mask(bgr_or_gray_mask)
-        return Response(
-            content=numpy_to_bytes(res_mask, "png"),
-            media_type="image/png",
-        )
+
+        base64_string = res_mask.decode('utf-8')
+        data = {
+            "code": "200",
+            # "image_data": f"data:image/{ext};base64,{base64_string}"
+            "image_data": base64_string
+        }
+        json_data = json.dumps(data)
+        return Response(content=json_data, media_type="application/json")
+
+        # return Response(
+        #     content=numpy_to_bytes(res_mask, "png"),
+        #     media_type="image/png",
+        # )
 
     def api_samplers(self) -> List[str]:
         return [member.value for member in SDSampler.__members__.values()]

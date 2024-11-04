@@ -86,9 +86,11 @@ export default async function inpaint(
     }),
   })
   if (res.ok) {
-    const blob = await res.blob()
+    // const blob = await res.blob()
+    const blob = await res.json()
     return {
-      blob: URL.createObjectURL(blob),
+      // blob: URL.createObjectURL(blob),
+      blob: blob,
       seed: res.headers.get("X-Seed"),
     }
   }
@@ -140,8 +142,10 @@ export async function runPlugin(
     }),
   })
   if (res.ok) {
-    const blob = await res.blob()
-    return { blob: URL.createObjectURL(blob) }
+    // const blob = await res.blob()
+    const blob = await res.json()
+    // return { blob: URL.createObjectURL(blob) }
+    return { blob: blob }
   }
   const errMsg = await res.json()
   throw new Error(errMsg)

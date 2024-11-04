@@ -1,0 +1,1 @@
+python main.py start --model lama --device=cuda --enable-remove-bg --port 8080

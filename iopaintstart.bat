@@ -1,0 +1,1 @@
+python main.py start --model lama --device=cuda --enable-interactive-seg --interactive-seg-model=sam2_base  --interactive-seg-device=cuda --enable-gfpgan --gfpgan-device cuda --enable-realesrgan --realesrgan-model RealESRGAN_x4plus --realesrgan-device cuda --enable-remove-bg --enable-restoreformer --restoreformer-device cuda --enable-anime-seg --port 8080
